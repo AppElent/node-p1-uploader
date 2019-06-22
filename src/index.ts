@@ -1,17 +1,15 @@
 import '@babel/polyfill';
+import moment from 'moment-timezone';
+import fetch from "node-fetch";
+import dotenv from 'dotenv';
+const Sequelize = require('sequelize');
+dotenv.config();
 
-console.log('abc123');
+console.log('Start loading p1 data..');
 
-const db = require('../config/db.config.js');
-var moment = require('moment-timezone');
-const path = require("path");
-
-const fetch = require("node-fetch");
-
-import Sequelize from 'sequelize';
 const sequelize = new Sequelize('domoticzDB', null, null, {
     dialect: "sqlite",
-    storage: '/home/pi/domoticz/domoticz.db'
+    storage: process.env.DATABASE_FILE
 });
 
 
@@ -61,19 +59,16 @@ timestamps: false,
 });
 MultiMeter.removeAttribute('id');
 
-exports.updateMeterstanden = async (req, res) => {
+const updateMeterstanden = async (force: boolean) => {
 
 	let meterstanden = await MultiMeter.findAll({
 	  where: {
-		DeviceRowID: 3
+		DeviceRowID: process.env.DEVICE_ROWID
 	  }
 	});
 	
-	//console.log('meterstanden', meterstanden);
-	
 	const lastentry = await MultiMeter.findOne({
 		where: {
-			//your where conditions, or without them if you need ANY entry
 			user: '00uaz3xmdoobfWWnY356'
 		},
 		order: [ [ 'datetime', 'DESC' ]]
@@ -84,8 +79,8 @@ exports.updateMeterstanden = async (req, res) => {
 		lastdate = lastentry.datetime;
 	}
 	
-	
-	if(req.params.force !== 'force'){
+	//Geforceerd alles laten
+	if(force){
 		meterstanden = meterstanden.filter((item) =>
 			new Date(item.Date) >= (new Date(lastdate))
 		);
@@ -114,14 +109,11 @@ exports.updateMeterstanden = async (req, res) => {
 			282: stand['282'],
 			user: '00uaz3xmdoobfWWnY356'
 		}
-		//console.log(values);
 		var gevondenmeterstand = await MultiMeter.findOne({ where: {datetime: rounded, user: '00uaz3xmdoobfWWnY356'} });
 		if(gevondenmeterstand == null){
 			gevondenmeterstand = await MultiMeter.create(values);
-			//console.log("Moet toegevoegd worden");
 		}else{
 			gevondenmeterstand = await gevondenmeterstand.update(values);
-			//console.log("Moet geupdate worden");
 		}
 
 	}
@@ -134,5 +126,5 @@ exports.updateMeterstanden = async (req, res) => {
 		}
 	})
 	
-	res.send(allm);
+	return allm;
 }
