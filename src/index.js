@@ -2,18 +2,23 @@ import '@babel/polyfill';
 import moment from 'moment-timezone';
 import fetch from "node-fetch";
 import dotenv from 'dotenv';
-const Sequelize = require('sequelize');
+import Sequelize from 'sequelize';
+//const Sequelize = require('sequelize');
 dotenv.config();
+const Op = Sequelize.Op;
 
 console.log('Start loading p1 data..');
 
-const sequelize = new Sequelize('domoticzDB', null, null, {
+const domoticz = new Sequelize('domoticzDB', null, null, {
     dialect: "sqlite",
-    storage: process.env.DATABASE_FILE
+    storage: '/home/pi/domoticz/domoticz.db'
 });
+var pg = require('pg');
+pg.defaults.ssl = true;
+const database = new Sequelize(process.env.DATABASE_URL);
 
 
-const MultiMeter = sequelize.define('MultiMeter', {
+const MultiMeter = domoticz.define('MultiMeter', {
     DeviceRowID: {
       type: Sequelize.INTEGER,
       allowNull: false,
@@ -59,16 +64,47 @@ timestamps: false,
 });
 MultiMeter.removeAttribute('id');
 
-const updateMeterstanden = async (force: boolean) => {
+const Meterstanden = database.define('meterstanden', {
+  datetime: {
+	type: Sequelize.DATE,
+	get: function () {
+		return moment(this.getDataValue('datetime')).tz('Europe/Amsterdam');//.format('YYYY-MM-DD HH:mm:ss');
+	}
+  },
+  user: {
+	type: Sequelize.STRING,
+	allowNull: false,
+  },
+  180: {
+	type: Sequelize.STRING
+  },181: {
+	type: Sequelize.STRING
+  },182: {
+	type: Sequelize.STRING
+  },280: {
+	type: Sequelize.STRING
+  },281: {
+	type: Sequelize.STRING
+  },282: {
+	type: Sequelize.STRING
+  },
+},{
+  tableName: 'meterstanden',
+});
+
+const updateMeterstanden = async (forceUpdate = false) => {
 
 	let meterstanden = await MultiMeter.findAll({
 	  where: {
-		DeviceRowID: process.env.DEVICE_ROWID
+		DeviceRowID: 3
 	  }
 	});
 	
-	const lastentry = await MultiMeter.findOne({
+	//console.log('meterstanden', meterstanden);
+	
+	const lastentry = await Meterstanden.findOne({
 		where: {
+			//your where conditions, or without them if you need ANY entry
 			user: '00uaz3xmdoobfWWnY356'
 		},
 		order: [ [ 'datetime', 'DESC' ]]
@@ -79,8 +115,8 @@ const updateMeterstanden = async (force: boolean) => {
 		lastdate = lastentry.datetime;
 	}
 	
-	//Geforceerd alles laten
-	if(force){
+	
+	if(forceUpdate === false){
 		meterstanden = meterstanden.filter((item) =>
 			new Date(item.Date) >= (new Date(lastdate))
 		);
@@ -109,22 +145,27 @@ const updateMeterstanden = async (force: boolean) => {
 			282: stand['282'],
 			user: '00uaz3xmdoobfWWnY356'
 		}
-		var gevondenmeterstand = await MultiMeter.findOne({ where: {datetime: rounded, user: '00uaz3xmdoobfWWnY356'} });
+		//console.log(values);
+		var gevondenmeterstand = await Meterstanden.findOne({ where: {datetime: rounded, user: '00uaz3xmdoobfWWnY356'} });
 		if(gevondenmeterstand == null){
-			gevondenmeterstand = await MultiMeter.create(values);
+			gevondenmeterstand = await Meterstanden.create(values);
+			//console.log("Moet toegevoegd worden");
 		}else{
 			gevondenmeterstand = await gevondenmeterstand.update(values);
+			//console.log("Moet geupdate worden");
 		}
 
 	}
 	
-	const allm = await MultiMeter.findAll({
+	await Meterstanden.destroy({
 		where: {
 			datetime: {
-			$gte: moment().subtract(7, 'days').startOf('day').toDate()
+				[Op.lt]: moment().subtract(3, 'days').startOf('day').toDate()
 			}
 		}
 	})
 	
-	return allm;
+	return;
 }
+
+updateMeterstanden(false);
