@@ -1,10 +1,7 @@
 import '@babel/polyfill';
 import moment from 'moment-timezone';
-import fetch from "node-fetch";
-import dotenv from 'dotenv';
+//import fetch from "node-fetch";
 import Sequelize from 'sequelize';
-//const Sequelize = require('sequelize');
-dotenv.config();
 const Op = Sequelize.Op;
 
 console.log('Start loading p1 data..');
