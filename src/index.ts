@@ -5,7 +5,7 @@ import fs from 'fs';
 import { Sequelize, Model, DataTypes, Op } from 'sequelize';
 
 const path = '/home/pi/domoticz/domoticz.db';
-const deviceID = 3;
+const deviceID = 1;
 
 console.log('Start loading p1 data..');
 
@@ -150,11 +150,14 @@ Meterstanden.init(
 );
 
 const updateMeterstanden = async (): Promise<void> => {
-    const meterstanden = await MultiMeter.findAll({
+    /*
+	const meterstanden = await MultiMeter.findAll({
         where: {
             DeviceRowID: deviceID,
         },
-    });
+	});
+	*/
+    const meterstanden = await MultiMeter.findAll();
 
     //console.log('meterstanden', meterstanden);
     /*
