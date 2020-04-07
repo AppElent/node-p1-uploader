@@ -5,6 +5,8 @@ import fs from 'fs';
 import { Sequelize, Model, DataTypes, Op } from 'sequelize';
 
 const path = '/home/pi/domoticz/domoticz.db';
+const pgdatabase =
+    'postgres://gsqxejvdzesobm:a310ed0ea0b99bfb6aca7ef2b7aa7dedace647c1e70bb391bec89406c113523d@ec2-54-228-243-29.eu-west-1.compute.amazonaws.com:5432/d28ih0f60di1pl';
 const deviceID = 1;
 
 console.log('Start loading p1 data..');
@@ -26,9 +28,7 @@ const domoticz = new Sequelize({
 
 //Doel database
 pg.defaults.ssl = true;
-const meterstanden = new Sequelize(
-    'postgres://gsqxejvdzesobm:a310ed0ea0b99bfb6aca7ef2b7aa7dedace647c1e70bb391bec89406c113523d@ec2-54-228-243-29.eu-west-1.compute.amazonaws.com:5432/d28ih0f60di1pl',
-);
+const meterstanden = new Sequelize(pgdatabase);
 
 class MultiMeter extends Model {
     public DeviceRowID: number;
