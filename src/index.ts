@@ -137,10 +137,12 @@ MeterstandenDev.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
+            unique: 'compositeIndex',
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: 'compositeIndex',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -177,10 +179,12 @@ MeterstandenStaging.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
+            unique: 'compositeIndex',
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: 'compositeIndex',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -217,10 +221,12 @@ MeterstandenProd.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
+            unique: 'compositeIndex',
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: 'compositeIndex',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -265,7 +271,7 @@ const updateMeterstanden = async (): Promise<void> => {
         const coeff = 1000 * 60 * 5;
         const rounded = new Date(Math.round(datum.getTime() / coeff) * coeff);
         if (![0, 15, 30, 45].includes(rounded.getMinutes())) {
-            continue;
+            //continue;
         }
 
         const values = {
@@ -285,7 +291,7 @@ const updateMeterstanden = async (): Promise<void> => {
         where: {
             datetime: {
                 [Op.lt]: moment()
-                    .subtract(3, 'days')
+                    .add(3, 'days')
                     .startOf('day')
                     .toDate(),
             },
@@ -295,7 +301,7 @@ const updateMeterstanden = async (): Promise<void> => {
         where: {
             datetime: {
                 [Op.lt]: moment()
-                    .subtract(3, 'days')
+                    .add(3, 'days')
                     .startOf('day')
                     .toDate(),
             },
@@ -305,7 +311,7 @@ const updateMeterstanden = async (): Promise<void> => {
         where: {
             datetime: {
                 [Op.lt]: moment()
-                    .subtract(3, 'days')
+                    .add(3, 'days')
                     .startOf('day')
                     .toDate(),
             },
