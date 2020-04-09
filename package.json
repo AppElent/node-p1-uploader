@@ -36,7 +36,7 @@
     "moment-timezone": "^0.5.28",
     "node-fetch": "^2.6.0",
     "pg": "^7.18.2",
-    "sequelize": "^5.21.6",
+    "sequelize": "^6.0.0-beta.5",
     "sqlite3": "^4.1.1"
   },
   "devDependencies": {

@@ -137,12 +137,11 @@ MeterstandenDev.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
-            unique: 'compositeIndex',
+            unique: true,
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: 'compositeIndex',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -179,12 +178,11 @@ MeterstandenStaging.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
-            unique: 'compositeIndex',
+            unique: true,
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: 'compositeIndex',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -221,12 +219,11 @@ MeterstandenProd.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
-            unique: 'compositeIndex',
+            unique: true,
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: 'compositeIndex',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -291,7 +288,7 @@ const updateMeterstanden = async (): Promise<void> => {
         where: {
             datetime: {
                 [Op.lt]: moment()
-                    .add(3, 'days')
+                    .subtract(3, 'days')
                     .startOf('day')
                     .toDate(),
             },
@@ -301,7 +298,7 @@ const updateMeterstanden = async (): Promise<void> => {
         where: {
             datetime: {
                 [Op.lt]: moment()
-                    .add(3, 'days')
+                    .subtract(3, 'days')
                     .startOf('day')
                     .toDate(),
             },
@@ -311,7 +308,7 @@ const updateMeterstanden = async (): Promise<void> => {
         where: {
             datetime: {
                 [Op.lt]: moment()
-                    .add(3, 'days')
+                    .subtract(3, 'days')
                     .startOf('day')
                     .toDate(),
             },
@@ -319,9 +316,12 @@ const updateMeterstanden = async (): Promise<void> => {
     });
 
     //console.log(postObject);
-    await MeterstandenDev.bulkCreate(postObject);
-    await MeterstandenStaging.bulkCreate(postObject);
-    await MeterstandenProd.bulkCreate(postObject);
+    //await meterstandenDev.sync({ force: true });
+    //await meterstandenStaging.sync({ force: true });
+    await MeterstandenDev.bulkCreate(postObject, { updateOnDuplicate: ['181', '182', 'updated_at'] });
+    await MeterstandenStaging.bulkCreate(postObject, { updateOnDuplicate: ['181', '182', 'updated_at'] });
+    //await meterstandenProd.sync({ force: true });
+    await MeterstandenProd.bulkCreate(postObject, { updateOnDuplicate: ['181', '182', 'updated_at'] });
 
     return;
 };
