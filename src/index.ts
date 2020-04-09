@@ -137,11 +137,12 @@ MeterstandenDev.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
-            unique: true,
+            unique: 'compositeKey',
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: 'compositeKey',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -178,11 +179,12 @@ MeterstandenStaging.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
-            unique: true,
+            unique: 'compositeKey',
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: 'compositeKey',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -219,11 +221,12 @@ MeterstandenProd.init(
                     .tz('Europe/Amsterdam')
                     .toDate();
             },
-            unique: true,
+            unique: 'compositeKey',
         },
         userId: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique: 'compositeKey',
         },
         180: {
             type: DataTypes.INTEGER,
@@ -320,10 +323,10 @@ const updateMeterstanden = async (): Promise<void> => {
     //console.log(postObject);
     //await meterstandenDev.sync({ force: true });
     //await meterstandenStaging.sync({ force: true });
-    await MeterstandenDev.bulkCreate(postObject, { updateOnDuplicate: ['181', '182', 'updated_at'] });
-    await MeterstandenStaging.bulkCreate(postObject, { updateOnDuplicate: ['181', '182', 'updated_at'] });
+    await MeterstandenDev.bulkCreate(postObject, { ignoreDuplicates: true });
+    await MeterstandenStaging.bulkCreate(postObject, { ignoreDuplicates: true });
     //await meterstandenProd.sync({ force: true });
-    await MeterstandenProd.bulkCreate(postObject, { updateOnDuplicate: ['181', '182', 'updated_at'] });
+    await MeterstandenProd.bulkCreate(postObject, { ignoreDuplicates: true });
 
     return;
 };
