@@ -3,10 +3,10 @@ import pg from 'pg';
 import fs from 'fs';
 //import fetch from "node-fetch";
 import { Sequelize, Model, DataTypes, Op } from 'sequelize';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const path = '/home/pi/domoticz/domoticz.db';
-const pgdatabase =
-    'postgres://gsqxejvdzesobm:a310ed0ea0b99bfb6aca7ef2b7aa7dedace647c1e70bb391bec89406c113523d@ec2-54-228-243-29.eu-west-1.compute.amazonaws.com:5432/d28ih0f60di1pl';
 const deviceID = 1;
 
 console.log('Start loading p1 data..');
@@ -28,7 +28,9 @@ const domoticz = new Sequelize({
 
 //Doel database
 pg.defaults.ssl = true;
-const meterstanden = new Sequelize(pgdatabase);
+const meterstandenDev = new Sequelize(process.env.connectionStringDev ?? '');
+const meterstandenStaging = new Sequelize(process.env.connectionStringStaging ?? '');
+const meterstandenProd = new Sequelize(process.env.connectionStringProd ?? '');
 
 class MultiMeter extends Model {
     public DeviceRowID: number;
@@ -101,7 +103,7 @@ MultiMeter.init(
 
 MultiMeter.removeAttribute('id');
 
-export default class Meterstanden extends Model {
+class MeterstandenDev extends Model {
     public datetime: Date;
     public userId: string;
     public value: string;
@@ -109,12 +111,28 @@ export default class Meterstanden extends Model {
     public readonly updatedAt!: Date;
 }
 
-Meterstanden.init(
+class MeterstandenStaging extends Model {
+    public datetime: Date;
+    public userId: string;
+    public value: string;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+}
+
+class MeterstandenProd extends Model {
+    public datetime: Date;
+    public userId: string;
+    public value: string;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+}
+
+MeterstandenDev.init(
     {
         datetime: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
-            get(this: Meterstanden): Date {
+            get(this: MeterstandenDev): Date {
                 return moment(this.getDataValue('datetime'))
                     .tz('Europe/Amsterdam')
                     .toDate();
@@ -145,7 +163,87 @@ Meterstanden.init(
     },
     {
         tableName: 'meterstanden',
-        sequelize: meterstanden,
+        sequelize: meterstandenDev,
+    },
+);
+
+MeterstandenStaging.init(
+    {
+        datetime: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            get(this: MeterstandenStaging): Date {
+                return moment(this.getDataValue('datetime'))
+                    .tz('Europe/Amsterdam')
+                    .toDate();
+            },
+        },
+        userId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        180: {
+            type: DataTypes.INTEGER,
+        },
+        181: {
+            type: DataTypes.INTEGER,
+        },
+        182: {
+            type: DataTypes.INTEGER,
+        },
+        280: {
+            type: DataTypes.INTEGER,
+        },
+        281: {
+            type: DataTypes.INTEGER,
+        },
+        282: {
+            type: DataTypes.INTEGER,
+        },
+    },
+    {
+        tableName: 'meterstanden',
+        sequelize: meterstandenStaging,
+    },
+);
+
+MeterstandenProd.init(
+    {
+        datetime: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+            get(this: MeterstandenProd): Date {
+                return moment(this.getDataValue('datetime'))
+                    .tz('Europe/Amsterdam')
+                    .toDate();
+            },
+        },
+        userId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        180: {
+            type: DataTypes.INTEGER,
+        },
+        181: {
+            type: DataTypes.INTEGER,
+        },
+        182: {
+            type: DataTypes.INTEGER,
+        },
+        280: {
+            type: DataTypes.INTEGER,
+        },
+        281: {
+            type: DataTypes.INTEGER,
+        },
+        282: {
+            type: DataTypes.INTEGER,
+        },
+    },
+    {
+        tableName: 'meterstanden',
+        sequelize: meterstandenProd,
     },
 );
 
@@ -158,32 +256,6 @@ const updateMeterstanden = async (): Promise<void> => {
 	});
 	*/
     const meterstanden = await MultiMeter.findAll();
-
-    //console.log('meterstanden', meterstanden);
-    /*
-    const lastentry = await Meterstanden.findOne({
-        where: {
-            //your where conditions, or without them if you need ANY entry
-            user: '00uaz3xmdoobfWWnY356',
-        },
-        order: [['datetime', 'DESC']],
-    });
-    let lastdate: Date = moment()
-        .add(-1, 'days')
-        .toDate();
-    if (lastentry !== null) {
-        console.log(
-            'Meterstanden moeten vanaf ' + moment(lastentry.datetime).format('YYYY-MM-DD HH:mm') + ' worden bijgewerkt',
-        );
-        lastdate = lastentry.datetime;
-    }
-
-    if (forceUpdate === false) {
-        meterstanden = meterstanden.filter(item => new Date(item.Date) >= new Date(lastdate));
-	}
-	*/
-
-    //console.log('test', meterstanden);
 
     const postObject = [];
 
@@ -204,27 +276,12 @@ const updateMeterstanden = async (): Promise<void> => {
             280: stand['281'] + stand['282'],
             281: stand['281'],
             282: stand['282'],
-            user: '00uaz3xmdoobfWWnY356',
+            userId: '00uaz3xmdoobfWWnY356',
         };
         postObject.push(values);
-        //console.log(values);
-
-        /*
-        const allmeterstanden = await Meterstanden.findAll({
-            where: { user: '00uaz3xmdoobfWWnY356' },
-        });
-        const gevondenmeterstand = allmeterstanden.find(row => row.datetime === rounded);
-        if (gevondenmeterstand === undefined) {
-            await Meterstanden.create(values);
-        } else {
-            await gevondenmeterstand.update(values);
-		}
-		*/
     }
-    console.log(postObject);
 
-    /*
-    await Meterstanden.destroy({
+    await MeterstandenDev.destroy({
         where: {
             datetime: {
                 [Op.lt]: moment()
@@ -234,7 +291,32 @@ const updateMeterstanden = async (): Promise<void> => {
             },
         },
     });
-*/
+    await MeterstandenStaging.destroy({
+        where: {
+            datetime: {
+                [Op.lt]: moment()
+                    .subtract(3, 'days')
+                    .startOf('day')
+                    .toDate(),
+            },
+        },
+    });
+    await MeterstandenProd.destroy({
+        where: {
+            datetime: {
+                [Op.lt]: moment()
+                    .subtract(3, 'days')
+                    .startOf('day')
+                    .toDate(),
+            },
+        },
+    });
+
+    //console.log(postObject);
+    await MeterstandenDev.bulkCreate(postObject);
+    await MeterstandenStaging.bulkCreate(postObject);
+    await MeterstandenProd.bulkCreate(postObject);
+
     return;
 };
 
