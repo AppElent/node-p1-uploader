@@ -281,7 +281,9 @@ const updateMeterstanden = async (): Promise<void> => {
             282: stand['282'],
             userId: '00uaz3xmdoobfWWnY356',
         };
-        postObject.push(values);
+        if (postObject.filter((e: any) => e.datetime === rounded).length === 0) {
+            postObject.push(values);
+        }
     }
 
     await MeterstandenDev.destroy({
