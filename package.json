@@ -27,7 +27,8 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "start:debug": "ts-node --inspect=5858 --debug-brk --ignore false src/index.ts"
   },
   "dependencies": {
     "@types/pg": "^7.14.3",
