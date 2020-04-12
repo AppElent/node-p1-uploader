@@ -282,7 +282,7 @@ const updateMeterstanden = async (): Promise<void> => {
             280: stand['281'] + stand['282'],
             281: stand['281'],
             282: stand['282'],
-            userId: '00uaz3xmdoobfWWnY356',
+            userId: 'p1ezZHQBsyWQDYm9BrCm2wlpP1o1',
         };
         if (postObject.filter((e: any) => e.datetime === rounded).length === 0) {
             postObject.push(values);
