@@ -1,8 +1,8 @@
 import moment from 'moment-timezone';
-import pg from 'pg';
+import axios from 'axios';
 import fs from 'fs';
 //import fetch from "node-fetch";
-import { Sequelize, Model, DataTypes, Op } from 'sequelize';
+import { Sequelize, Model, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -25,12 +25,6 @@ const domoticz = new Sequelize({
     dialect: 'sqlite',
     storage: realpath,
 });
-
-//Doel database
-pg.defaults.ssl = true;
-const meterstandenDev = new Sequelize(process.env.connectionStringDev ?? '');
-const meterstandenStaging = new Sequelize(process.env.connectionStringStaging ?? '');
-const meterstandenProd = new Sequelize(process.env.connectionStringProd ?? '');
 
 class MultiMeter extends Model {
     public DeviceRowID: number;
@@ -103,156 +97,6 @@ MultiMeter.init(
 
 MultiMeter.removeAttribute('id');
 
-class MeterstandenDev extends Model {
-    public datetime: Date;
-    public userId: string;
-    public value: string;
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-}
-
-class MeterstandenStaging extends Model {
-    public datetime: Date;
-    public userId: string;
-    public value: string;
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-}
-
-class MeterstandenProd extends Model {
-    public datetime: Date;
-    public userId: string;
-    public value: string;
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-}
-
-MeterstandenDev.init(
-    {
-        datetime: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-            get(this: MeterstandenDev): Date {
-                return moment(this.getDataValue('datetime'))
-                    .tz('Europe/Amsterdam')
-                    .toDate();
-            },
-            unique: 'compositeKey',
-        },
-        userId: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: 'compositeKey',
-        },
-        180: {
-            type: DataTypes.INTEGER,
-        },
-        181: {
-            type: DataTypes.INTEGER,
-        },
-        182: {
-            type: DataTypes.INTEGER,
-        },
-        280: {
-            type: DataTypes.INTEGER,
-        },
-        281: {
-            type: DataTypes.INTEGER,
-        },
-        282: {
-            type: DataTypes.INTEGER,
-        },
-    },
-    {
-        tableName: 'meterstanden',
-        sequelize: meterstandenDev,
-    },
-);
-
-MeterstandenStaging.init(
-    {
-        datetime: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-            get(this: MeterstandenStaging): Date {
-                return moment(this.getDataValue('datetime'))
-                    .tz('Europe/Amsterdam')
-                    .toDate();
-            },
-            unique: 'compositeKey',
-        },
-        userId: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: 'compositeKey',
-        },
-        180: {
-            type: DataTypes.INTEGER,
-        },
-        181: {
-            type: DataTypes.INTEGER,
-        },
-        182: {
-            type: DataTypes.INTEGER,
-        },
-        280: {
-            type: DataTypes.INTEGER,
-        },
-        281: {
-            type: DataTypes.INTEGER,
-        },
-        282: {
-            type: DataTypes.INTEGER,
-        },
-    },
-    {
-        tableName: 'meterstanden',
-        sequelize: meterstandenStaging,
-    },
-);
-
-MeterstandenProd.init(
-    {
-        datetime: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-            get(this: MeterstandenProd): Date {
-                return moment(this.getDataValue('datetime'))
-                    .tz('Europe/Amsterdam')
-                    .toDate();
-            },
-            unique: 'compositeKey',
-        },
-        userId: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: 'compositeKey',
-        },
-        180: {
-            type: DataTypes.INTEGER,
-        },
-        181: {
-            type: DataTypes.INTEGER,
-        },
-        182: {
-            type: DataTypes.INTEGER,
-        },
-        280: {
-            type: DataTypes.INTEGER,
-        },
-        281: {
-            type: DataTypes.INTEGER,
-        },
-        282: {
-            type: DataTypes.INTEGER,
-        },
-    },
-    {
-        tableName: 'meterstanden',
-        sequelize: meterstandenProd,
-    },
-);
-
 const updateMeterstanden = async (): Promise<void> => {
     /*
 	const meterstanden = await MultiMeter.findAll({
@@ -282,53 +126,19 @@ const updateMeterstanden = async (): Promise<void> => {
             280: stand['281'] + stand['282'],
             281: stand['281'],
             282: stand['282'],
-            userId: 'p1ezZHQBsyWQDYm9BrCm2wlpP1o1',
         };
         if (postObject.filter((e: any) => e.datetime === rounded).length === 0) {
             postObject.push(values);
         }
     }
 
-    await MeterstandenDev.destroy({
-        where: {
-            datetime: {
-                [Op.lt]: moment()
-                    .subtract(3, 'days')
-                    .startOf('day')
-                    .toDate(),
-            },
-        },
-    });
-    await MeterstandenStaging.destroy({
-        where: {
-            datetime: {
-                [Op.lt]: moment()
-                    .subtract(3, 'days')
-                    .startOf('day')
-                    .toDate(),
-            },
-        },
-    });
-    await MeterstandenProd.destroy({
-        where: {
-            datetime: {
-                [Op.lt]: moment()
-                    .subtract(3, 'days')
-                    .startOf('day')
-                    .toDate(),
-            },
-        },
-    });
-
-    //console.log(postObject);
-    //await meterstandenDev.sync({ force: true });
-    //await meterstandenStaging.sync({ force: true });
-    await MeterstandenDev.bulkCreate(postObject, { ignoreDuplicates: true });
-    await MeterstandenStaging.bulkCreate(postObject, { ignoreDuplicates: true });
-    //await meterstandenProd.sync({ force: true });
-    await MeterstandenProd.bulkCreate(postObject, { ignoreDuplicates: true });
-
-    return;
+    //const resultLocal = await axios.post('http://192.168.178.122:3001/api/meterstanden', postObject);
+    //const resultDev = await axios.post('https://appelent-api-dev.herokuapp.com/api/meterstanden', postObject);
+    //const resultStaging = await axios.post('https://appelent-api-staging.herokuapp.com/api/meterstanden', postObject);
+    const resultProd = await axios.post(
+        'https://api.appelent.com/api/meterstanden?user=fkkdEvpjgkhlhtQGqdkHTToWO233&api_key=abcdef',
+        postObject,
+    );
 };
 
 updateMeterstanden();
