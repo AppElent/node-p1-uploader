@@ -31,32 +31,28 @@
     "start:debug": "ts-node --inspect=5858 --debug-brk --ignore false src/index.ts"
   },
   "dependencies": {
-    "@types/pg": "^7.14.3",
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.28",
-    "node-fetch": "^2.6.0",
-    "pg": "^7.18.2",
-    "sequelize": "^6.0.0-beta.5",
+    "sequelize": "^5.21.6",
     "sqlite3": "^4.1.1"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.30",
     "@types/jest": "^24.0.24",
     "@types/moment-timezone": "^0.5.13",
-    "@types/node": "^12.12.21",
-    "@types/node-fetch": "^2.5.4",
+    "@types/node": "^12.12.36",
     "@types/validator": "^12.0.1",
-    "@typescript-eslint/eslint-plugin": "^2.12.0",
-    "@typescript-eslint/parser": "^2.12.0",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.7.0",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-prettier": "^3.1.3",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
     "ts-jest": "^24.2.0",
-    "ts-node": "^8.8.2",
+    "ts-node": "^8.9.0",
     "typescript": "^3.7.3"
   }
 }
