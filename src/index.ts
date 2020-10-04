@@ -1,10 +1,23 @@
+#!/usr/bin/env node
+
+import yargs from 'yargs';
+const argv = yargs.argv;
+
+console.log(argv.test);
+
+if (!argv.key) {
+    throw 'Key not given';
+}
+
+if (!argv.endpoint) {
+    throw 'Endpoint not found';
+}
+
 import moment from 'moment-timezone';
 import axios from 'axios';
 import fs from 'fs';
 //import fetch from "node-fetch";
 import { Sequelize, Model, DataTypes } from 'sequelize';
-import dotenv from 'dotenv';
-dotenv.config();
 
 const path = '/home/pi/domoticz/domoticz.db';
 const deviceID = 1;
@@ -120,12 +133,12 @@ const updateMeterstanden = async (): Promise<void> => {
 
         const values = {
             datetime: rounded,
-            180: stand['181'] + stand['182'],
-            181: stand['181'],
-            182: stand['182'],
-            280: stand['281'] + stand['282'],
-            281: stand['281'],
-            282: stand['282'],
+            kwh_180: stand['181'] + stand['182'],
+            kwh_181: stand['181'],
+            kwh_182: stand['182'],
+            kwh_280: stand['281'] + stand['282'],
+            kwh_281: stand['281'],
+            kwh_282: stand['282'],
         };
         if (postObject.filter((e: any) => e.datetime === rounded).length === 0) {
             postObject.push(values);
@@ -135,10 +148,11 @@ const updateMeterstanden = async (): Promise<void> => {
     //const resultLocal = await axios.post('http://192.168.178.122:3001/api/meterstanden', postObject);
     //const resultDev = await axios.post('https://appelent-api-dev.herokuapp.com/api/meterstanden', postObject);
     //const resultStaging = await axios.post('https://appelent-api-staging.herokuapp.com/api/meterstanden', postObject);
-    const resultProd = await axios.post(
-        'https://api.appelent.com/api/meterstanden?user=fkkdEvpjgkhlhtQGqdkHTToWO233&api_key=abcdef',
-        postObject,
-    );
+    console.log(postObject);
+    const url = argv.endpoint + '/api/meterstanden/';
+    const resultProd = await axios.post(url, postObject, {
+        headers: { Authorization: 'Token ' + argv.key },
+    });
 };
 
 updateMeterstanden();
