@@ -89,14 +89,9 @@ MultiMeter.init(
         Date: {
             type: DataTypes.STRING,
             allowNull: false,
-            get: function(this: MultiMeter): Date {
+            get: function (this: MultiMeter): Date {
                 return moment
-                    .tz(
-                        moment(this.getDataValue('Date'))
-                            .utc()
-                            .format('YYYY-MM-DD HH:mm:ss'),
-                        'Europe/Amsterdam',
-                    )
+                    .tz(moment(this.getDataValue('Date')).utc().format('YYYY-MM-DD HH:mm:ss'), 'Europe/Amsterdam')
                     .toDate();
             },
         },
@@ -148,7 +143,6 @@ const updateMeterstanden = async (): Promise<void> => {
     //const resultLocal = await axios.post('http://192.168.178.122:3001/api/meterstanden', postObject);
     //const resultDev = await axios.post('https://appelent-api-dev.herokuapp.com/api/meterstanden', postObject);
     //const resultStaging = await axios.post('https://appelent-api-staging.herokuapp.com/api/meterstanden', postObject);
-    console.log(postObject);
     const url = argv.endpoint + '/api/meterstanden/';
     const resultProd = await axios.post(url, postObject, {
         headers: { Authorization: 'Token ' + argv.key },
