@@ -34,7 +34,7 @@
     "start:debug": "ts-node --inspect=5858 --debug-brk --ignore false src/index.ts"
   },
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^0.21.1",
     "moment": "^2.29.0",
     "moment-timezone": "^0.5.31",
     "sequelize": "^6.3.5",
