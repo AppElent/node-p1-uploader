@@ -36,7 +36,7 @@
   "dependencies": {
     "axios": "^0.20.0",
     "moment": "^2.29.0",
-    "moment-timezone": "^0.5.31",
+    "moment-timezone": "^0.5.35",
     "sequelize": "^6.3.5",
     "sqlite3": "^5.0.0",
     "yargs": "^16.0.3"
